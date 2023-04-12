@@ -19,16 +19,18 @@
 #include <arrow/util/logging.h>
 #include <parquet/api/reader.h>
 #include <parquet/api/writer.h>
+#include <parquet/types.h>
 
 using parquet::ConvertedType;
 using parquet::Repetition;
 using parquet::Type;
 using parquet::schema::GroupNode;
 using parquet::schema::PrimitiveNode;
+using parquet::LogicalType;
 
 constexpr int FIXED_LENGTH = 10;
 
-static std::shared_ptr<GroupNode> SetupSchema() {
+[[maybe_unused]] static std::shared_ptr<GroupNode> SetupSchema() {
   parquet::schema::NodeVector fields;
   // Create a primitive node named 'boolean_field' with type:BOOLEAN,
   // repetition:REQUIRED
@@ -68,3 +70,12 @@ static std::shared_ptr<GroupNode> SetupSchema() {
   return std::static_pointer_cast<GroupNode>(
       GroupNode::Make("schema", Repetition::REQUIRED, fields));
 }
+
+[[maybe_unused]] static std::shared_ptr<GroupNode> SetupNestedSchema() {
+    auto element = PrimitiveNode::Make("element", Repetition::OPTIONAL, LogicalType::Int(32, true), Type::INT32);
+    auto list = GroupNode::Make("list", Repetition::REPEATED, {element});
+    auto key = GroupNode::Make("key", Repetition::OPTIONAL, {list}, ::parquet::LogicalType::List());
+    return std::static_pointer_cast<GroupNode>(
+            GroupNode::Make("schema", Repetition::REQUIRED, {key}));
+}
+
